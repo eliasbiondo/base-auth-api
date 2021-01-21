@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
-const jsonwebtokenConfig = require('../../config/token.json')
+const jsonwebtokenConfig = require('../../config/token.json');
+const Invalidated_token = require('../../models/invalidated_tokens');
 
 module.exports = async (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -25,7 +26,23 @@ module.exports = async (req, res, next) => {
             return res.status(401).json({code: 401, error: 'Invalid token!'})
         }
 
-        req.userId = decoded.id;
-        next();
+        Invalidated_token.findOne(
+            {where: 
+                {
+                    token
+                }
+            }
+        ).then((invalidated_token) => {
+            if (invalidated_token) {
+                return res.status(401).json({code: 401, error: 'The token provided was invalidated due to a password change!'})
+            }
+
+            req.token = token;
+            req.userId = decoded.id;
+            req.tokenIat = decoded.iat;
+            req.tokenExp = decoded.exp;
+            next();
+        })
+
     })
 }

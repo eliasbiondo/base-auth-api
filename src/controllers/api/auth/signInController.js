@@ -1,9 +1,17 @@
-const User = require('../../../models/user');
+const User = require('../../../models/users');
 const bcrypt = require('bcrypt');
 const tokenGenerator = require('../../../helpers/tokenGenerator');
 
 module.exports = async (req, res) => {
     const {email, password} = req.body;
+
+    if (!email) {
+        return res.status(400).json({code: 400, error: 'The email field cannot be null!'})
+    }
+
+    if (!password) {
+        return res.status(400).json({code: 400, error: 'The password field cannot be null!'})
+    }
 
     User.findOne({
         where: {

@@ -1,6 +1,6 @@
-const User = require('../../../models/user');
+const User = require('../../../models/users');
+const Invalidated_token = require('../../../models/invalidated_tokens')
 const bcrypt = require('bcrypt');
-const tokenGenerator = require('../../../helpers/tokenGenerator');
 
 module.exports = async (req, res) => {
     
@@ -16,10 +16,25 @@ module.exports = async (req, res) => {
         return res.status(400).json({code: 400, error: 'No new password provided!'})
     }
 
-    const hashedNewPassword = await bcrypt.hash(newpassword, 10);
+    const {token, tokenExp} = req;
 
-    user.password = hashedNewPassword;
-    await user.save();
+    const expires_in = new Date(tokenExp * 1000);
 
-    res.status(200).json({'status': 'success', id: user.id})
+    Invalidated_token.create({
+        token,
+        expires_in
+    }).then(async () => {
+
+        const hashedNewPassword = await bcrypt.hash(newpassword, 10);
+
+        user.password = hashedNewPassword;
+        await user.save();
+
+        res.status(200).json({'status': 'success', 'message': 'password changed successfully', id: user.id})
+
+    }).catch(error => {
+        res.status(400).json({code: 400, error: 'There was an error while invalidating the token. The password cannot to be changed!'})
+    })
+
+
 }
