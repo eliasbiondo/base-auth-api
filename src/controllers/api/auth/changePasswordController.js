@@ -33,7 +33,7 @@ module.exports = async (req, res) => {
         res.status(200).json({'status': 'success', 'message': 'password changed successfully', id: user.id})
 
     }).catch(error => {
-        res.status(400).json({code: 400, error: 'There was an error while invalidating the token. The password cannot to be changed!'})
+        res.status(400).json({code: 400, error: 'There was an error while invalidating the token. The password cannot to be changed! Try again'})
     })
 
 
