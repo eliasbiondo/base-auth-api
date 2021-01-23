@@ -2,9 +2,17 @@ const express = require("express");
 const colors = require("colors");
 const env = require("dotenv").config();
 
+const sequelize = require("./database");
+const authApiRouter = require("./routes/api/auth")
+const notFoundHelper = require("./helpers/notFound");
+
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+app.use('/api/v1/auth', authApiRouter);
+app.use(notFoundHelper);
 
 const port = process.env.PORT || 3001;
 app.listen(port, (error) => {
@@ -17,7 +25,7 @@ app.listen(port, (error) => {
   );
 });
 
-const sequelize = require("./database");
+
 sequelize
   .authenticate()
   .then(() => {
