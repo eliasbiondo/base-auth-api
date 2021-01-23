@@ -2,7 +2,7 @@ const { Model, DataTypes } = require('sequelize');
 
 class User extends Model {
   static init(sequelize) {
-    User.init({
+    super.init({
       username: DataTypes.STRING,
       email: DataTypes.STRING,
       password: DataTypes.STRING,

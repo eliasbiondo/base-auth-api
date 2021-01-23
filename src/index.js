@@ -5,12 +5,19 @@ const colors = require("colors");
 
 // Importing required files
 const sequelize = require("./database");
+const pageNotFound = require("./helpers/pageNotFound");
+const authApiRouter = require("./routes/api/v1/auth")
 
-// App & server settings
+// App settings
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Routes
+app.use("/api/v1/auth", authApiRouter);
+app.use(pageNotFound);
+
+// Server settings
 const port = process.env.PORT || 3001;
 app.listen(port, (error) => {
   console.log(`
