@@ -1,0 +1,31 @@
+{
+  "name": "auth-api",
+  "version": "1.0.0",
+  "description": "A base auth api for your node.js project Project under construction",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eliasbiondo/base-auth-api.git"
+  },
+  "author": "Elias Biondo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/eliasbiondo/base-auth-api/issues"
+  },
+  "homepage": "https://github.com/eliasbiondo/base-auth-api#readme",
+  "dependencies": {
+    "bcrypt": "^5.0.0",
+    "colors": "^1.4.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "mysql2": "^2.2.5",
+    "sequelize": "^6.4.0",
+    "sequelize-cli": "^6.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  }
+}
