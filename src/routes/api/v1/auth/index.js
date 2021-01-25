@@ -14,11 +14,8 @@ const has_moderator_level = require("../../../../middlewares/has_moderator_level
 const has_admin_level = require("../../../../middlewares/has_admin_level");
 
 // Routes
-router.post('/', auth.index);
-router.post('/users', auth.store);
-router.get('/seila', authenticate, is_verified, has_moderator_level, (req, res) => {
-    res.status(200).json({status: 200, data: req.user})
-})
+router.post('/', auth.index); // Sign in
+router.post('/users', auth.store); // Sign up
 
 
 module.exports = router;

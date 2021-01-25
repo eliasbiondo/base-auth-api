@@ -56,6 +56,7 @@ module.exports = {
 
 
   },
+  
   // Sign up
   async store(req, res) {
     // Validanting inputs
