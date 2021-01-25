@@ -3,10 +3,10 @@ const regexExpressions = require("./regexExpressions");
 module.exports = (fields = {}, required = []) => {
     
     let object = {
-        valid: {
+        valid_fields: {
 
         },
-        invalid: {
+        invalid_fields: {
 
         }
     }
@@ -17,28 +17,28 @@ module.exports = (fields = {}, required = []) => {
 
 
         if (!username) {
-            object.invalid.username = {
+            object.invalid_fields.username = {
                 reason: "null value",
                 message:"The 'username' field cannot be empty."
             };
         } else if ( username.length < 8 ) {
-            object.invalid.username = {
+            object.invalid_fields.username = {
                 reason: "too short",
                 message:"The 'username' field must be between 8 and 12 characters."
             };
         } else if ( username.length > 12 ) {
-            object.invalid.username = {
+            object.invalid_fields.username = {
                 reason: "too large",
                 message:"The 'username' field must be between 8 and 12 characters."
             };
         } else if (!regexExpressions.isAlphanumeric.test(username)) {
-            object.invalid.username = {
+            object.invalid_fields.username = {
                 reason: "invalid character",
                 message:"The 'username' field only accepts alphanumeric characters (a-Z,0-9)."
             };
         } else {
             username = username.toLowerCase();
-            object.valid.username = username;
+            object.valid_fields.username = username;
         }
 
 
@@ -48,18 +48,18 @@ module.exports = (fields = {}, required = []) => {
 
 
         if (!email) {
-            object.invalid.email = {
+            object.invalid_fields.email = {
                 reason: "null value",
                 message:"The 'email' field cannot be empty."
             };
         } else if (!regexExpressions.isEmail.test(email)) {
-            object.invalid.email = {
+            object.invalid_fields.email = {
                 reason: "invalid format",
                 message:"The 'email' field must have the following format: example@example.com"
             };
         } else {
             email = email.toLowerCase();
-            object.valid.email = email;
+            object.valid_fields.email = email;
         }
         
         
@@ -69,32 +69,32 @@ module.exports = (fields = {}, required = []) => {
 
 
         if (!password) {
-            object.invalid.password = {
+            object.invalid_fields.password = {
                 reason: "null value",
                 message:"The 'password' field cannot be empty."
             };
         } else if ( password.length < 8 ) {
-            object.invalid.password = {
+            object.invalid_fields.password = {
                 reason: "too short",
                 message:"The 'password' field must be between 8 and 16 characters."
             };
         } else if ( password.length > 16 ) {
-            object.invalid.password = {
+            object.invalid_fields.password = {
                 reason: "too large",
                 message:"The 'password' field must be between 8 and 16 characters."
             };
         } else if ( password.includes(' ') ) {
-            object.invalid.password = {
+            object.invalid_fields.password = {
                 reason: "invalid character",
                 message:"The 'password' field only accepts lowercase characters, uppercase characters, numbers and special chars (!, @, #, $, %, ^, &, *)."
             };
         } else if ( !regexExpressions.isValidPassword.test(password) ) {
-            object.invalid.password = {
+            object.invalid_fields.password = {
                 reason: "invalid password",
                 message:"The 'password' field must be at least one lowercase character, one uppercase character, one number and one special char (!, @, #, $, %, ^, &, *)."
             };
         } else {
-            object.valid.password = password;
+            object.valid_fields.password = password;
         }
 
 
@@ -106,17 +106,17 @@ module.exports = (fields = {}, required = []) => {
         const splittedFullName = full_name.toLowerCase().split(' ')
 
         if (!full_name) {
-            object.invalid.full_name = {
+            object.invalid_fields.full_name = {
                 reason: "null value",
                 message:"The 'full_name' field cannot be empty."
             };
         } else if (!regexExpressions.isAlphabetic.test(full_name)) {
-            object.invalid.full_name = {
+            object.invalid_fields.full_name = {
                 reason: "invalid character",
                 message:"The 'full_name' field only supports alphabetic characters (letters and spaces)."
             };
         } else if (splittedFullName.length < 2 || splittedFullName[1] == '') {
-            object.invalid.full_name = {
+            object.invalid_fields.full_name = {
                 reason: "no last name provided",
                 message:"The 'full_name' field must have at least two separated names. Eg: Luke Skywalker"
             };
@@ -132,7 +132,7 @@ module.exports = (fields = {}, required = []) => {
             })
 
             full_name = formattedFullName.join(' ')
-            object.valid.full_name = full_name;
+            object.valid_fields.full_name = full_name;
 
         }
 
@@ -142,34 +142,34 @@ module.exports = (fields = {}, required = []) => {
     if ( required.includes("birthday") ) {
 
         if (!birthday) {
-            object.invalid.birthday = {
+            object.invalid_fields.birthday = {
                 reason: "null value",
                 message:"The 'birthday' field cannot be empty."
             };
         } else if(!Number.isInteger(birthday)) {
-            object.invalid.birthday = {
+            object.invalid_fields.birthday = {
                 reason: "invalid format",
                 message:"The 'birthday' field must contain a timestamp (interger number)."
             };
         } else {
-            object.valid.birthday = birthday;
+            object.valid_fields.birthday = birthday;
         }
     }
 
     if ( required.includes("profile_img") ) {
 
         if (!profile_img) {
-            object.invalid.profile_img = {
+            object.invalid_fields.profile_img = {
                 reason: "null value",
                 message:"The 'profile_img' field cannot be empty."
             };
         } else if(!regexExpressions.isURL.test(profile_img)) {
-            object.invalid.profile_img = {
+            object.invalid_fields.profile_img = {
                 reason: "invalid format",
                 message:"The 'profile_img' field must have to be a URL. Eg: http://example.com/image.jpg"
             };
         } else {
-            object.valid.profile_img = profile_img;
+            object.valid_fields.profile_img = profile_img;
         }
     }
 
