@@ -1,9 +1,62 @@
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const tokenConfig = require("../../../../config/token.json")
 
 const User = require("../../../../models/User");
 const fieldsValidator = require("../../../../helpers/fieldsValidator");
 
 module.exports = {
+  // Sign in
+  async index(req, res) {
+    // Validanting inputs
+    const { valid_fields, invalid_fields } = fieldsValidator(req.body, [
+      "email",
+      "password",
+    ]);
+    
+    // Returning an error response, detailing the reason for refusal if there's one or more invalid fields
+    if (Object.keys(invalid_fields).length > 0) {
+      return res
+        .status(400)
+        .json({ status: 400, error: { invalid_fields } });
+    }
+
+    // Destructuring valid fields
+    let { email, password } = valid_fields;
+
+    try {
+
+
+      const user = await User.findOne({
+        where: {
+          email
+        }
+      })
+
+      const match = await bcrypt.compare(password, user.password);
+
+      if (!match) {
+        return res
+        .status(401)
+        .json({ status: 400, error: "invalid email or password" });
+      }
+
+      const { id, full_name, username, permission_level, is_verified } = user;
+
+      const token = jwt.sign({ id, full_name, username, email, permission_level, is_verified }, tokenConfig.secret, {
+        expiresIn: 86400
+      })
+
+      return res.status(200).json({status: 200, message: "authenticated successfully", token})
+
+
+    } catch (error) {
+
+    }
+
+
+  },
+  // Sign up
   async store(req, res) {
     // Validanting inputs
     const { valid_fields, invalid_fields } = fieldsValidator(req.body, [
@@ -21,7 +74,7 @@ module.exports = {
       }`, // It'll only be validated if declared in the request body
     ]);
 
-    // Returning an error response, detailing the reason for the refusal if there's one or more invalid fields
+    // Returning an error response, detailing the reason for refusal if there's one or more invalid fields
     if (Object.keys(invalid_fields).length > 0) {
       return res
         .status(400)
@@ -91,8 +144,17 @@ module.exports = {
         profile_img
     })
       .then((data) => {
-        data.password = undefined;
-        return res.status(200).json(data);
+
+      let { id, full_name, username, email } = data;
+
+      // generating auth token
+      const token = jwt.sign({ id, full_name, username, email, permission_level: 1 }, tokenConfig.secret, {
+        expiresIn: 86400
+      })
+
+      return res.status(200).json({status: 200, message: "User created successfully", data: {id, full_name, username, email}, token});
+
+
       })
       .catch((error) => {
         console.log(error);
@@ -103,5 +165,5 @@ module.exports = {
             "Failed to record data. Please, try again later. If the error persists, notify the website adminitrator.",
         });
       });
-  },
+  }
 };

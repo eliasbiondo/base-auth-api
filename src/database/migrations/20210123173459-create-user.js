@@ -9,15 +9,19 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       username: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       email: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       password: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       full_name: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       birthday: {
@@ -27,9 +31,13 @@ module.exports = {
         type: Sequelize.STRING
       },
       is_verified: {
+        allowNull: false,
+        defaultValue: 0,
         type: Sequelize.BOOLEAN
       },
       permission_level: {
+        allowNull: false,
+        defaultValue: 1,
         type: Sequelize.INTEGER
       },
       created_at: {

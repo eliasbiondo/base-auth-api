@@ -7,7 +7,18 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../../../controllers/api/v1/auth')
 
+// Importing middlewares
+const authenticate = require("../../../../middlewares/authenticate");
+const is_verified = require("../../../../middlewares/is_verified");
+const has_moderator_level = require("../../../../middlewares/has_moderator_level");
+const has_admin_level = require("../../../../middlewares/has_admin_level");
+
 // Routes
-router.post('/users', auth.store)
+router.post('/', auth.index);
+router.post('/users', auth.store);
+router.get('/seila', authenticate, is_verified, has_moderator_level, (req, res) => {
+    res.status(200).json({status: 200, data: req.user})
+})
+
 
 module.exports = router;
