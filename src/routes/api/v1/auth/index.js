@@ -14,8 +14,11 @@ const has_moderator_level = require("../../../../middlewares/has_moderator_level
 const has_admin_level = require("../../../../middlewares/has_admin_level");
 
 // Routes
-router.post('/', auth.index); // Sign in
-router.post('/users', auth.store); // Sign up
+router.post('/', auth.signin);
+router.post('/users', auth.signup);
+router.post('/users/:id/verify/request-token', authenticate, auth.verify.request_token) // email address verification
+router.post('/users/:id/verify/validate-token', authenticate, auth.verify.validate_token) // email address verification
+router.get('/users/:id/verify/confirmation', auth.verify.web_email_validator)
 
 
 module.exports = router;

@@ -2,18 +2,18 @@
 const jwt = require("jsonwebtoken");
 
 // Importing required files
-const tokenConfig = require("../config/token.json");
+const tokenConfig = require("../config/tokens");
 
 module.exports = (req, res, next) => {
   // Getting the authorization header from request
   const { authorization } = req.headers;
 
-  // Verifying if authorization header is null or undefined
+  // Checking if authorization header is null or undefined
   if (!authorization) {
     return res.status(401).json({ status: 401, error: "no token provided" });
   }
 
-  // Verifying the authorization header structure before validate token
+  // Checking the authorization header structure before validate token
   const splittedAuthHeader = authorization.split(" ");
 
   if (splittedAuthHeader.length != 2) {
@@ -28,7 +28,7 @@ module.exports = (req, res, next) => {
   const token = splittedAuthHeader[1];
 
   try {
-    const decoded = jwt.verify(token, tokenConfig.secret);
+    const decoded = jwt.verify(token, tokenConfig.session.secret);
 
     const { id, full_name, username, email } = decoded;
 

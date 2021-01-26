@@ -19,12 +19,12 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  // Verifying if user has not yet confirmed it email adress.
+  // Checking if user has not yet confirmed it email adress.
   if (!user.is_verified) {
     return res.status(401).json({
       status: 401,
       error: "restrict route",
-      message: "Verify your email address before continue.",
+      message: "Confirm your email address before continue.",
     });
   }
 
