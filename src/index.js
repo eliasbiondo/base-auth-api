@@ -12,6 +12,8 @@ const authApiRouter = require("./routes/api/v1/auth")
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.set("view engine", "ejs");
+app.use(express.static('./mail/public'));
 
 // Routes
 app.use("/api/v1/auth", authApiRouter);

@@ -5,6 +5,6 @@ module.exports = {
         secret: process.env.JWT__SESSION_ENCRYPTATION_KEY
     },
     mail: {
-        secret: process.env.JWT__MAIL_CONFIRM_ENCRYPTATION_KEY
+        secret: process.env.JWT__MAILCONFIRM_ENCRYPTATION_KEY
     }
 }

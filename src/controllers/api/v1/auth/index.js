@@ -1,12 +1,14 @@
+const ejs = require("ejs");
+const path = require("path");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const tokenConfig = require("../../../../config/tokens");
-const nodemailer = require("nodemailer");
-const transporter = require("../../../../config/mail");
 const env = require("dotenv").config();
 
 const User = require("../../../../models/User");
 const fieldsValidator = require("../../../../helpers/fieldsValidator");
+const tokenConfig = require("../../../../config/tokens");
+const transporter = require("../../../../mail");
+
 
 module.exports = {
   async signin(req, res) {
@@ -57,7 +59,7 @@ module.exports = {
 
       return res
         .status(200)
-        .json({ status: 200, message: "authenticated successfully", token });
+        .json({ status: 200, message: "successfully authenticated", data: { id, full_name, username }, token });
     } catch (error) {
       console.log(error);
     }
@@ -161,14 +163,12 @@ module.exports = {
           }
         );
 
-        return res
-          .status(200)
-          .json({
-            status: 200,
-            message: "User created successfully",
-            data: { id, full_name, username, email },
-            token,
-          });
+        return res.status(200).json({
+          status: 200,
+          message: "User created successfully",
+          data: { id, full_name, username, email },
+          token,
+        });
       })
       .catch((error) => {
         console.log(error);
@@ -191,17 +191,15 @@ module.exports = {
 
       // Checking if logged user is another than target user. If true, sending an error response.
       if (id != target_id) {
-        return res
-          .status(401)
-          .json({
-            status: 401,
-            error: "unauthorized",
-            message:
-              "You cannot request an email verification for user other than yourself.",
-          });
+        return res.status(401).json({
+          status: 401,
+          error: "unauthorized",
+          message:
+            "You cannot request an email verification for user other than yourself.",
+        });
       }
 
-      // Checking if user has already done the email verification
+      // Getting the user data
       let user = {};
 
       try {
@@ -217,78 +215,165 @@ module.exports = {
         });
       }
 
+      // Checking if user is already verified
       if (user.is_verified) {
         return res.status(400).json({
           status: 400,
-          error: "user already verified",
-          message: "You have already done the email verification.",
+          error: "email already confirmed"
         });
       }
 
-      const token = jwt.sign({id}, tokenConfig.mail.secret, {
-        expiresIn: 900
+      // Getting token expiration time
+      let date = new Date();
+      let exp = date.setMinutes(date.getMinutes() + 15);
+      let exp_ = new Date(exp);
+      
+      // Generating the email verification token
+      const token = jwt.sign({ id }, tokenConfig.mail.secret, {
+        expiresIn: 900,
       });
 
+      // Sending the verification email
       try {
-        let mail = await transporter.sendMail({
+
+        let email;
+
+        try {
+
+          const app_name = process.env.APP_NAME;
+          const app_host = process.env.APP_HOST;
+          const user_id = id;
+          const user_email = user.email;
+
+          // Building the custom verification link setted on .env file (to fire the email verification by frontend)
+          let verification_link = process.env.APP_CUSTOM_EMAIL_VERIFICATION_LINK;
+          verification_link = verification_link.replace(':app_host:', app_host);
+          verification_link = verification_link.replace(':id:', user_id);
+          verification_link = verification_link.replace(':email:', user_email);
+          verification_link = verification_link.replace(':token:', token);
+          
+          // Building email by ejs template
+          email = await ejs.renderFile(path.resolve(__dirname, "../../../../", "mail", "views/confirm_email.ejs"), {
+            app_name,
+            app_host,
+            user_id,
+            token,
+            verification_link,
+          })
+
+        } catch (error) {
+
+          console.log(error);
+
+          return res.status(500).json({
+            status: 500,
+            error: "failed to send validation token to user's email",
+            message:
+              "Please, try again later. If the error persists, notify the website adminitrator.",
+          });
+
+        }
+
+        // Sending email
+        await transporter.sendMail({
+          from: `'${process.env.APP_NAME} 👻' <${process.env.MAIL_USER}>`,
           to: user.email,
-          subject: "Please verify your email address",
-          html: `
-            <h1>Email Verification</h1>
-            <p>${process.env.APP_NAME} needs to confirm your email address is valid. Please click the link below to confirm your email address.</p>
-            <p> <a href="${process.env.APP_HOST}/api/v1/auth/users/${id}/verify/confirmation?token=${token}">Verify Email</a> </p>
-            <p> Sincerely, ${process.env.APP_NAME} </p>
-          `
-        })
+          subject: "📬 Please verify your email address",
+          html: email,
+        });
 
-        console.log("Message sent: %s", mail.messageId);
+        return res.status(200).json({
+          status: 200,
+          message: `Email sent successfully.`,
+          data: {
+            from: process.env.MAIL_USER,
+            to: user.email,
+            exp,
+            exp_
+          }
+        });
 
-        return res.status(200).json({status: 200, message: `email validation token sent successfully to ${user.email}`, expiration_time: "15 minutes"})
+      } catch (error) {
+        
+        console.log(error);
+
+        return res.status(500).json({
+          status: 500,
+          error: "failed to send validation token to user's email",
+          message:
+            "Please, try again later. If the error persists, notify the website adminitrator.",
+        });
+      }
+    },
+
+    async validate_token(req, res) {
+
+       // Getting the id of target user setted by id parameter in URL -> (domain.com/api/v1/auth/users/:id/verify)
+       const { id } = req.params;
+
+       // Getting the email verification token from body request
+       const { email_verification_token } = req.body
+
+       // Checking if exists an email verification token and sending and error response if false
+       if ( !email_verification_token ) {
+        return res.status(400).json({ status: 401, error: "no email verification token provided" });
+       }
+
+       // Validating email verification token and sending an error response if token isn't valid
+       let decoded;
+       
+       try {
+          decoded = jwt.verify(email_verification_token, tokenConfig.mail.secret);
+       } catch (error) {
+          return res.status(400).json({ status: 401, error: "invalid or expired email verificantion token" });
+       }
+
+       if (decoded.id != id) {
+          return res.status(400).json({ status: 401, error: "invalid or expired email verificantion token" });
+       }
+ 
+       // Getting the user data
+      let user = {};
+
+      try {
+        user = await User.findByPk(id);
+      } catch (error) {
+        console.log(error);
+
+        return res.status(500).json({
+          status: 500,
+          error: "failed to get data",
+          message:
+            "Please, try again later. If the error persists, notify the website adminitrator.",
+        });
+      }
+
+      // Checking if user is already verified
+      if (user.dataValues.is_verified) {
+        return res.status(400).json({
+          status: 400,
+          error: "email already confirmed"
+        });
+      }
+
+      // confirming user's email
+      try {
+
+        user.is_verified = 1;
+        await user.save();
+        return res.status(200).json({status: 200, message: "email confirmed successfully"})
 
       } catch (error) {
         console.log(error);
 
         return res.status(500).json({
           status: 500,
-          error: "failed to send email validation token",
+          error: "failed to save data",
           message:
             "Please, try again later. If the error persists, notify the website adminitrator.",
         });
       }
-      
-
 
     },
-
-    async validate_token(req, res) {
-      res.status(200)
-    },
-
-    async web_email_validator(req, res) {
-      const { token } = req.query
-
-      if ( !token ) {
-        res.status(400).send("<h1>No token provided.</h1>");
-      }
-
-      try {
-        const { id } = jwt.verify(token, tokenConfig.mail.secret);
-
-        const user = await User.findByPk(id)
-
-        user.is_verified = 1;
-
-        await user.save();
-
-        return res.status(200).send("<h1>Email confirmed successfully.</h1>")
-
-      } catch (error) {
-        return res.status(401).send("<h1>Failed to verify the email address.</h1>");
-      }
-
-    }
-
-
-  }
-    
+  },
 };

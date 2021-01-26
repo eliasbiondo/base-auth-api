@@ -1,7 +1,7 @@
 const env = require("dotenv").config();
 const nodemailer = require("nodemailer");
 
-module.exports = nodemailer.createTransport({
+module.exports = {
     host: process.env.MAIL_HOST,
     port: process.env.MAIL_PORT,
     auth: {
@@ -11,4 +11,4 @@ module.exports = nodemailer.createTransport({
     tls: {
         rejectUnauthorized: false
     }
-});
+};
