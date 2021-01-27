@@ -14,7 +14,12 @@ class User extends Model {
     }, {
       sequelize,
       freezeTableName: true,
-      tableName: 'Users'
+      tableName: 'Users',
+      scopes: {
+        withoutPassword: {
+          attributes: { exclude: ['password'] },
+        }
+      }
     })
   }
 }

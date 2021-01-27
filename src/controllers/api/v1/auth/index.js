@@ -245,7 +245,7 @@ module.exports = {
           const user_email = user.email;
 
           // Building the custom email verification link setted on .env file (to fire the email verification by frontend)
-          let email_verification_link = process.env.APP_CUSTOM_EMAIL_email_verification_link;
+          let email_verification_link = process.env.APP_CUSTOM_EMAIL_VERIFICATION_LINK;
 
           email_verification_link = email_verification_link.replace(":id:", user_id);
           email_verification_link = email_verification_link.replace(":email:", user_email);
@@ -381,6 +381,47 @@ module.exports = {
             "Please, try again later. If the error persists, notify the website adminitrator.",
         });
       }
-    },
+    }
   },
+  
+  async get_users(req, res) {
+
+    let users;
+    
+    try {
+      users = await User.scope('withoutPassword').findAll();
+    } catch (error) {
+      return res.status(500).json({
+        status: 500,
+        error: "failed to get data",
+        message:
+          "Please, try again later. If the error persists, notify the website adminitrator.",
+      });
+    }
+
+    return res.status(200).json({status: 200, users})
+
+
+  },
+
+  async get_user(req, res) {
+
+    const { id } = req.params
+
+    let user;
+    
+    try {
+      user = await User.scope('withoutPassword').findByPk( id );
+    } catch (error) {
+      return res.status(500).json({
+        status: 500,
+        error: "failed to get data",
+        message:
+          "Please, try again later. If the error persists, notify the website adminitrator.",
+      });
+    }
+    
+    return res.status(200).json({status: 200, user})
+  }
+
 };
